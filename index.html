@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,6 +90,8 @@
   <h2>Acupuncture Patient Records</h2>
 
   <div class="tabs">
+    <button class="tab-button" data-tab="reports">📊 Reports</button>
+
     <button class="tab-button active" data-tab="new">➕ New Patient</button>
     <button class="tab-button" data-tab="search">🔍 Search</button>
   </div>
@@ -125,7 +128,30 @@
       <h3>Search Results</h3>
       <div id="recordsContainer"></div>
     </div>
+  
+  <div id="reports" class="tab-content">
+    <div class="search">
+      <h3>Reports</h3>
+      <label for="reportRange">Select Range:</label>
+      <select id="reportRange" onchange="updateReports()">
+      <div style="margin-top: 10px;">
+        <label>Custom Date Range:</label><br>
+        <input type="date" id="startDate"> to
+        <input type="date" id="endDate">
+        <button onclick="filterByCustomDates()">Apply</button>
+      </div>
+
+        <option value="daily">Today</option>
+        <option value="weekly">This Week</option>
+        <option value="monthly">This Month</option>
+      </select>
+    </div>
+    <div class="records">
+      <canvas id="patientsChart" style="max-width: 600px; margin: auto;"></canvas>
+      <canvas id="feesChart" style="max-width: 600px; margin: auto; margin-top: 20px;"></canvas>
+    </div>
   </div>
+
 
   <div style="text-align:center; padding: 10px;">
     <button onclick="exportData()">📤 Backup (Export)</button>
@@ -137,7 +163,6 @@
     const form = document.getElementById('patientForm');
     const recordsContainer = document.getElementById('recordsContainer');
 
-    // ✅ Fixed tab switching using data-tab
     document.querySelectorAll('.tab-button').forEach(button => {
       button.addEventListener('click', () => {
         const tabId = button.getAttribute('data-tab');
@@ -146,6 +171,11 @@
 
         button.classList.add('active');
         document.getElementById(tabId).classList.add('active');
+
+        if (tabId === 'search') {
+          document.getElementById('searchInput').value = '';
+          recordsContainer.innerHTML = '';
+        }
       });
     });
 
@@ -182,7 +212,6 @@
       alert("New patient added successfully!");
     });
 
-    // ✅ Fixed: Partial matching in search
     function searchRecords() {
       const keyword = document.getElementById('searchInput').value.trim();
       const patients = getPatients();
@@ -214,8 +243,10 @@
               <input type="date" id="edit-date-${mobile}-${index}-${tIndex}" value="${t.date}">
               <label>Points:</label>
               <textarea id="edit-points-${mobile}-${index}-${tIndex}">${t.points}</textarea>
-              <button onclick="saveTreatment('${mobile}', ${index}, ${tIndex})">Save Treatment</button>
-              <button class="danger" onclick="deleteTreatment('${mobile}', ${index}, ${tIndex})">Delete Treatment</button>
+              <div style="text-align: right;">
+                <button onclick="saveTreatment('${mobile}', ${index}, ${tIndex})">💾</button>
+                <button onclick="deleteTreatment('${mobile}', ${index}, ${tIndex})">🗑️</button>
+              </div>
             </div>
           `;
         });
@@ -226,8 +257,10 @@
           <input type="text" id="edit-name-${mobile}-${index}" value="${patient.name}">
           <label>Fees:</label>
           <input type="number" id="edit-fees-${mobile}-${index}" value="${patient.fees}">
-          <button onclick="savePatient('${mobile}', ${index})">Save Patient</button>
-          <button class="danger" onclick="deletePatient('${mobile}', ${index})">Delete Patient</button><br><br>
+          <div style="text-align: right; margin-bottom: 10px;">
+            <button onclick="savePatient('${mobile}', ${index})">💾</button>
+            <button onclick="deletePatient('${mobile}', ${index})">🗑️</button>
+          </div>
           <strong>Mobile:</strong> ${mobile}<br>
           <strong>Treatments:</strong><br>
           ${treatmentHtml}
@@ -333,12 +366,140 @@
       };
       reader.readAsText(file);
     }
-  </script>
+  
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
+      function filterByCustomDates() {
+        const start = new Date(document.getElementById('startDate').value);
+        const end = new Date(document.getElementById('endDate').value);
+        const patients = getPatients();
+
+        let patientCount = 0;
+        let totalFees = 0;
+
+        for (const mobile in patients) {
+          patients[mobile].forEach(record => {
+            record.treatments.forEach(t => {
+              const treatmentDate = new Date(t.date);
+              if (treatmentDate >= start && treatmentDate <= end) {
+                patientCount++;
+                totalFees += parseFloat(record.fees || 0);
+              }
+            });
+          });
+        }
+
+        drawChart('patientsChart', 'Patients Treated', patientCount);
+        drawChart('feesChart', 'Fees Collected', totalFees);
+      }
+
+</script>
+    <script>
+      function updateReports() {
+        const range = document.getElementById('reportRange').value;
+        const patients = getPatients();
+        const now = new Date();
+        let patientCount = 0;
+        let totalFees = 0;
+
+        for (const mobile in patients) {
+          patients[mobile].forEach(record => {
+            record.treatments.forEach(t => {
+              const treatmentDate = new Date(t.date);
+              const timeDiff = now - treatmentDate;
+              const days = timeDiff / (1000 * 60 * 60 * 24);
+
+              if ((range === 'daily' && days < 1) ||
+                  (range === 'weekly' && days < 7) ||
+                  (range === 'monthly' && days < 31)) {
+                patientCount++;
+                totalFees += parseFloat(record.fees || 0);
+              }
+            });
+          });
+        }
+
+        drawChart('patientsChart', 'Patients Treated', patientCount);
+        drawChart('feesChart', 'Fees Collected', totalFees);
+      }
+
+      function drawChart(canvasId, label, value) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if (window[canvasId + 'Instance']) {
+          window[canvasId + 'Instance'].destroy();
+        }
+        window[canvasId + 'Instance'] = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [label],
+            datasets: [{
+              label: label,
+              data: [value],
+              backgroundColor: '#26a69a'
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      // Trigger report generation on tab switch
+      document.querySelector('[data-tab="reports"]').addEventListener('click', updateReports);
+    
+      function filterByCustomDates() {
+        const start = new Date(document.getElementById('startDate').value);
+        const end = new Date(document.getElementById('endDate').value);
+        const patients = getPatients();
+
+        let patientCount = 0;
+        let totalFees = 0;
+
+        for (const mobile in patients) {
+          patients[mobile].forEach(record => {
+            record.treatments.forEach(t => {
+              const treatmentDate = new Date(t.date);
+              if (treatmentDate >= start && treatmentDate <= end) {
+                patientCount++;
+                totalFees += parseFloat(record.fees || 0);
+              }
+            });
+          });
+        }
+
+        drawChart('patientsChart', 'Patients Treated', patientCount);
+        drawChart('feesChart', 'Fees Collected', totalFees);
+      }
+
+</script>
+
+
+      function filterByCustomDates() {
+        const start = new Date(document.getElementById('startDate').value);
+        const end = new Date(document.getElementById('endDate').value);
+        const patients = getPatients();
+
+        let patientCount = 0;
+        let totalFees = 0;
+
+        for (const mobile in patients) {
+          patients[mobile].forEach(record => {
+            record.treatments.forEach(t => {
+              const treatmentDate = new Date(t.date);
+              if (treatmentDate >= start && treatmentDate <= end) {
+                patientCount++;
+                totalFees += parseFloat(record.fees || 0);
+              }
+            });
+          });
+        }
+
+        drawChart('patientsChart', 'Patients Treated', patientCount);
+        drawChart('feesChart', 'Fees Collected', totalFees);
+      }
+
+</script>
 </body>
 </html>
-
-
-      
-  </style>
-</head>
-<body>
