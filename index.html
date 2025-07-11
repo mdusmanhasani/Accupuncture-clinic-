@@ -347,6 +347,27 @@ function addTreatment(mobile, index) {
       };
       reader.readAsText(file);
     }
-  </script>
+  
+function updateDatalist() {
+  const dl = document.getElementById('patient-list');
+  if (!dl) return;
+  dl.innerHTML = '';
+  const patients = getPatients();
+  for (const mobile in patients) {
+    patients[mobile].forEach(p => {
+      if (p.name) {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        dl.appendChild(opt);
+      }
+    });
+    const opt = document.createElement('option');
+    opt.value = mobile;
+    dl.appendChild(opt);
+  }
+}
+window.onload = updateDatalist;
+
+</script>
 </body>
 </html>
