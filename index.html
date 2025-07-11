@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,8 +89,8 @@
   <h2>Acupuncture Patient Records</h2>
 
   <div class="tabs">
-    <button class="tab-button active" onclick="switchTab('new')">➕ New Patient</button>
-    <button class="tab-button" onclick="switchTab('search')">🔍 Search</button>
+    <button class="tab-button active" data-tab="new">➕ New Patient</button>
+    <button class="tab-button" data-tab="search">🔍 Search</button>
   </div>
 
   <div id="new" class="tab-content active">
@@ -138,12 +137,17 @@
     const form = document.getElementById('patientForm');
     const recordsContainer = document.getElementById('recordsContainer');
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelector(\`.tab-button[onclick*="\${tabId}"]\`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
+    // ✅ Fixed tab switching using data-tab
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const tabId = button.getAttribute('data-tab');
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+        button.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
 
     function getPatients() {
       return JSON.parse(localStorage.getItem('patients') || '{}');
@@ -178,20 +182,26 @@
       alert("New patient added successfully!");
     });
 
+    // ✅ Fixed: Partial matching in search
     function searchRecords() {
       const keyword = document.getElementById('searchInput').value.trim();
       const patients = getPatients();
-      const records = patients[keyword] || [];
-      renderRecords(keyword, records);
+      recordsContainer.innerHTML = '';
+
+      let found = false;
+      for (const mobile in patients) {
+        if (mobile.includes(keyword)) {
+          found = true;
+          renderRecords(mobile, patients[mobile]);
+        }
+      }
+
+      if (!found) {
+        recordsContainer.innerHTML = '<p>No matching patients found.</p>';
+      }
     }
 
     function renderRecords(mobile, patientsList) {
-      recordsContainer.innerHTML = '';
-      if (!patientsList.length) {
-        recordsContainer.innerHTML = '<p>No matching patients found.</p>';
-        return;
-      }
-
       patientsList.forEach((patient, index) => {
         const div = document.createElement('div');
         div.className = 'record';
@@ -280,9 +290,9 @@
       searchRecords();
     }
 
-function addTreatment(mobile, index) {
-      const date = document.getElementById(\`date-\${mobile}-\${index}\`).value;
-      const points = document.getElementById(\`points-\${mobile}-\${index}\`).value.trim();
+    function addTreatment(mobile, index) {
+      const date = document.getElementById(`date-${mobile}-${index}`).value;
+      const points = document.getElementById(`points-${mobile}-${index}`).value.trim();
 
       if (!date || !points) {
         alert("Please enter date and points.");
@@ -295,30 +305,6 @@ function addTreatment(mobile, index) {
         savePatients(patients);
         searchRecords();
       }
-    }
-
-    function updatePatientName(mobile, index, value) {
-      let patients = getPatients();
-      patients[mobile][index].name = value;
-      savePatients(patients);
-    }
-
-    function updatePatientFees(mobile, index, value) {
-      let patients = getPatients();
-      patients[mobile][index].fees = value;
-      savePatients(patients);
-    }
-
-    function updateTreatmentDate(mobile, patientIndex, treatmentIndex, value) {
-      let patients = getPatients();
-      patients[mobile][patientIndex].treatments[treatmentIndex].date = value;
-      savePatients(patients);
-    }
-
-    function updateTreatmentPoints(mobile, patientIndex, treatmentIndex, value) {
-      let patients = getPatients();
-      patients[mobile][patientIndex].treatments[treatmentIndex].points = value;
-      savePatients(patients);
     }
 
     function exportData() {
@@ -347,27 +333,12 @@ function addTreatment(mobile, index) {
       };
       reader.readAsText(file);
     }
-  
-function updateDatalist() {
-  const dl = document.getElementById('patient-list');
-  if (!dl) return;
-  dl.innerHTML = '';
-  const patients = getPatients();
-  for (const mobile in patients) {
-    patients[mobile].forEach(p => {
-      if (p.name) {
-        const opt = document.createElement('option');
-        opt.value = p.name;
-        dl.appendChild(opt);
-      }
-    });
-    const opt = document.createElement('option');
-    opt.value = mobile;
-    dl.appendChild(opt);
-  }
-}
-window.onload = updateDatalist;
-
-</script>
+  </script>
 </body>
 </html>
+
+
+      
+  </style>
+</head>
+<body>
