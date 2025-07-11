@@ -87,7 +87,30 @@
         flex-direction: column;
       }
     }
-  </style>
+  
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 18px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    .icon-btn:hover {
+      color: #007bff;
+    }
+    input, select, textarea {
+      max-width: 100%;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .treatment, .record {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    </style>
+    
 </head>
 <body>
 
@@ -241,8 +264,8 @@
               <input type="date" id="edit-date-${mobile}-${index}-${tIndex}" value="${t.date}">
               <label>Points:</label>
               <textarea id="edit-points-${mobile}-${index}-${tIndex}">${t.points}</textarea>
-              <button class="btn-right" onclick="saveTreatment('${mobile}', ${index}, ${tIndex})">💾</button>
-              <button class="btn-right" onclick="deleteTreatment('${mobile}', ${index}, ${tIndex})">🗑️</button>
+              <button class=\"btn-right icon-btn\" title=\"Save Treatment\" onclick=\"saveTreatment('${mobile}', ${index}, ${tIndex})\"><i class=\"fas fa-save\"></i></button>
+              <button class=\"btn-right icon-btn\" title=\"Delete Treatment\" onclick=\"deleteTreatment('${mobile}', ${index}, ${tIndex})\"><i class=\"fas fa-trash-alt\"></i></button>
             </div>
           `;
         });
@@ -253,8 +276,8 @@
           <input type="text" id="edit-name-${mobile}-${index}" value="${patient.name}">
           <label>Fees:</label>
           <input type="number" id="edit-fees-${mobile}-${index}" value="${patient.fees}">
-          <button class="btn-right" onclick="savePatient('${mobile}', ${index})">💾</button>
-          <button class="btn-right" onclick="deletePatient('${mobile}', ${index})">🗑️</button><br><br>
+          <button class=\"btn-right icon-btn\" title=\"Save Patient\" onclick=\"savePatient('${mobile}', ${index})\"><i class=\"fas fa-save\"></i></button>
+          <button class=\"btn-right icon-btn\" title=\"Delete Patient\" onclick=\"deletePatient('${mobile}', ${index})\"><i class=\"fas fa-trash-alt\"></i></button><br><br>
           <strong>Mobile:</strong> ${mobile}<br>
           <strong>Treatments:</strong><br>
           ${treatmentHtml}
@@ -262,7 +285,7 @@
           <label>Add New Treatment:</label>
           <input type="date" id="date-${mobile}-${index}">
           <textarea id="points-${mobile}-${index}" placeholder="New points used"></textarea>
-          <button onclick="addTreatment('${mobile}', ${index})">➕ Add Treatment</button>
+          <button class=\"icon-btn\" title=\"Add Treatment\" onclick=\"addTreatment('${mobile}', ${index})\"><i class=\"fas fa-plus\"></i> Add Treatment</button>
         `;
 
         recordsContainer.appendChild(div);
@@ -334,8 +357,27 @@
       }
     }
 
+    
     function exportData() {
       const dataStr = JSON.stringify(getPatients(), null, 2);
+      const isMobileApp = navigator.userAgent.includes("wv") || navigator.userAgent.includes("Android");
+
+      if (isMobileApp) {
+        alert("Oops! Export is not available in the app version. You can manually save the data as a text file.");
+
+        // Create a .doc file with the JSON content
+        const blob = new Blob(["<pre>" + dataStr + "</pre>"], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'patients_backup.doc';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+
+      // Regular web browser export as JSON
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -344,7 +386,8 @@
       a.click();
     }
 
-    function importData(event) {
+
+function importData(event) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
