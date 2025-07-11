@@ -132,7 +132,6 @@
   <h2>Acupuncture Patient Records</h2>
 
   <div class="tabs">
-    <button class="tab-button" data-tab="dynamic">➕ Add Treatment</button>
     <button class="tab-button active" data-tab="new">➕ New Patient</button>
     <button class="tab-button" data-tab="search">🔍 Search</button>
     <button class="tab-button" data-tab="reports">📊 Reports</button>
@@ -192,65 +191,63 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js">
-    // Dynamic Treatment Tab Logic
-    const dynamicContainer = document.getElementById('treatments-container');
-    const addTreatmentBtn = document.getElementById('add-treatment');
+function createTreatmentEntry() {
+      const div = document.createElement('div');
+      div.classList.add('treatment-entry');
 
-    if (addTreatmentBtn) {
-      addTreatmentBtn.addEventListener('click', () => {
-        const div = document.createElement('div');
-        div.classList.add('record');
-        div.innerHTML = \`
-          <input type="text" class="patient-name" placeholder="Patient Name">
-          <input type="number" class="fees" placeholder="Fees">
-          <input type="date" class="date">
-          <textarea class="points" placeholder="Points Used"></textarea>
-          <div class="action-buttons" style="display:flex; justify-content: flex-end; gap:10px;">
-            <button class="save-btn" style="background:#4CAF50; color:white;"><i class="fas fa-save"></i></button>
-            <button class="delete-btn" style="background:#F44336; color:white;"><i class="fas fa-trash"></i></button>
-          </div>
-        \`;
+      div.innerHTML = \`
+        <input type="text" class="patient-name" placeholder="Patient Name">
+        <input type="number" class="fees" placeholder="Fees">
+        <input type="date" class="date">
+        <textarea class="points" placeholder="Points Used"></textarea>
+        <div class="action-buttons">
+          <button class="save-btn"><i class="fas fa-save"></i></button>
+          <button class="delete-btn"><i class="fas fa-trash"></i></button>
+        </div>
+      \`;
 
-        div.querySelector('.delete-btn').addEventListener('click', () => {
-          dynamicContainer.removeChild(div);
-        });
-
-        div.querySelector('.save-btn').addEventListener('click', () => {
-          const name = div.querySelector('.patient-name').value.trim();
-          const fees = div.querySelector('.fees').value.trim();
-          const date = div.querySelector('.date').value;
-          const points = div.querySelector('.points').value.trim();
-
-          if (!name || !fees || !date || !points) {
-            alert("Please fill all fields.");
-            return;
-          }
-
-          const mobile = prompt("Enter mobile number to save this treatment:");
-          if (!mobile || isNaN(mobile)) {
-            alert("Invalid mobile number.");
-            return;
-          }
-
-          let patients = JSON.parse(localStorage.getItem('patients') || '{}');
-          if (!patients[mobile]) patients[mobile] = [];
-
-          let existing = patients[mobile].find(p => p.name === name);
-          if (!existing) {
-            existing = { name, fees, treatments: [] };
-            patients[mobile].push(existing);
-          }
-
-          existing.treatments.push({ date, points });
-          localStorage.setItem('patients', JSON.stringify(patients));
-          alert("Treatment saved.");
-          div.remove();
-        });
-
-        dynamicContainer.appendChild(div);
+      div.querySelector('.delete-btn').addEventListener('click', () => {
+        treatmentsContainer.removeChild(div);
       });
+
+      div.querySelector('.save-btn').addEventListener('click', () => {
+        const name = div.querySelector('.patient-name').value.trim();
+        const fees = div.querySelector('.fees').value.trim();
+        const date = div.querySelector('.date').value;
+        const points = div.querySelector('.points').value.trim();
+
+        if (!name || !fees || !date || !points) {
+          alert("Please fill all fields.");
+          return;
+        }
+
+        const mobile = prompt("Enter mobile number to save this treatment:");
+
+        if (!mobile || isNaN(mobile)) {
+          alert("Invalid mobile number.");
+          return;
+        }
+
+        let patients = JSON.parse(localStorage.getItem('patients') || '{}');
+        if (!patients[mobile]) patients[mobile] = [];
+
+        // Use first matching or create a new record
+        let existing = patients[mobile].find(p => p.name === name);
+        if (!existing) {
+          existing = { name, fees, treatments: [] };
+          patients[mobile].push(existing);
+        }
+
+        existing.treatments.push({ date, points });
+        localStorage.setItem('patients', JSON.stringify(patients));
+        alert("Treatment saved.");
+        div.remove();
+      });
+
+      treatmentsContainer.appendChild(div);
     }
 
+    addTreatmentBtn.addEventListener('click', createTreatmentEntry);
 </script>
   <script>
     const form = document.getElementById('patientForm');
@@ -525,73 +522,64 @@ function importData(event) {
       });
     }
   
-    // Dynamic Treatment Tab Logic
-    const dynamicContainer = document.getElementById('treatments-container');
-    const addTreatmentBtn = document.getElementById('add-treatment');
+function createTreatmentEntry() {
+      const div = document.createElement('div');
+      div.classList.add('treatment-entry');
 
-    if (addTreatmentBtn) {
-      addTreatmentBtn.addEventListener('click', () => {
-        const div = document.createElement('div');
-        div.classList.add('record');
-        div.innerHTML = \`
-          <input type="text" class="patient-name" placeholder="Patient Name">
-          <input type="number" class="fees" placeholder="Fees">
-          <input type="date" class="date">
-          <textarea class="points" placeholder="Points Used"></textarea>
-          <div class="action-buttons" style="display:flex; justify-content: flex-end; gap:10px;">
-            <button class="save-btn" style="background:#4CAF50; color:white;"><i class="fas fa-save"></i></button>
-            <button class="delete-btn" style="background:#F44336; color:white;"><i class="fas fa-trash"></i></button>
-          </div>
-        \`;
+      div.innerHTML = \`
+        <input type="text" class="patient-name" placeholder="Patient Name">
+        <input type="number" class="fees" placeholder="Fees">
+        <input type="date" class="date">
+        <textarea class="points" placeholder="Points Used"></textarea>
+        <div class="action-buttons">
+          <button class="save-btn"><i class="fas fa-save"></i></button>
+          <button class="delete-btn"><i class="fas fa-trash"></i></button>
+        </div>
+      \`;
 
-        div.querySelector('.delete-btn').addEventListener('click', () => {
-          dynamicContainer.removeChild(div);
-        });
-
-        div.querySelector('.save-btn').addEventListener('click', () => {
-          const name = div.querySelector('.patient-name').value.trim();
-          const fees = div.querySelector('.fees').value.trim();
-          const date = div.querySelector('.date').value;
-          const points = div.querySelector('.points').value.trim();
-
-          if (!name || !fees || !date || !points) {
-            alert("Please fill all fields.");
-            return;
-          }
-
-          const mobile = prompt("Enter mobile number to save this treatment:");
-          if (!mobile || isNaN(mobile)) {
-            alert("Invalid mobile number.");
-            return;
-          }
-
-          let patients = JSON.parse(localStorage.getItem('patients') || '{}');
-          if (!patients[mobile]) patients[mobile] = [];
-
-          let existing = patients[mobile].find(p => p.name === name);
-          if (!existing) {
-            existing = { name, fees, treatments: [] };
-            patients[mobile].push(existing);
-          }
-
-          existing.treatments.push({ date, points });
-          localStorage.setItem('patients', JSON.stringify(patients));
-          alert("Treatment saved.");
-          div.remove();
-        });
-
-        dynamicContainer.appendChild(div);
+      div.querySelector('.delete-btn').addEventListener('click', () => {
+        treatmentsContainer.removeChild(div);
       });
+
+      div.querySelector('.save-btn').addEventListener('click', () => {
+        const name = div.querySelector('.patient-name').value.trim();
+        const fees = div.querySelector('.fees').value.trim();
+        const date = div.querySelector('.date').value;
+        const points = div.querySelector('.points').value.trim();
+
+        if (!name || !fees || !date || !points) {
+          alert("Please fill all fields.");
+          return;
+        }
+
+        const mobile = prompt("Enter mobile number to save this treatment:");
+
+        if (!mobile || isNaN(mobile)) {
+          alert("Invalid mobile number.");
+          return;
+        }
+
+        let patients = JSON.parse(localStorage.getItem('patients') || '{}');
+        if (!patients[mobile]) patients[mobile] = [];
+
+        // Use first matching or create a new record
+        let existing = patients[mobile].find(p => p.name === name);
+        if (!existing) {
+          existing = { name, fees, treatments: [] };
+          patients[mobile].push(existing);
+        }
+
+        existing.treatments.push({ date, points });
+        localStorage.setItem('patients', JSON.stringify(patients));
+        alert("Treatment saved.");
+        div.remove();
+      });
+
+      treatmentsContainer.appendChild(div);
     }
 
+    addTreatmentBtn.addEventListener('click', createTreatmentEntry);
 </script>
-
-  <div id="dynamic" class="tab-content">
-    <div id="treatments-container"></div>
-    <div class="add-treatment-container">
-      <button id="add-treatment"><i class="fas fa-plus-circle"></i> Add Treatment</button>
-    </div>
-  </div>
 
 </body>
 </html>
