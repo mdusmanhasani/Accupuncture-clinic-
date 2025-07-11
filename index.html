@@ -1,11 +1,12 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Acupuncture Clinic App</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Acupuncture Clinic App</title>
+<style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -86,80 +87,38 @@
   </style>
 </head>
 <body>
+<h2>Acupuncture Patient Records</h2>
+<div class="tabs"><button class="tab-button active" data-tab="new">➕ New Patient</button><button class="tab-button" data-tab="search">🔍 Search</button><button class="tab-button" data-tab="reports">📊 Reports</button></div><div class="tab-content active" id="new">
+<form id="patientForm">
+<label>Mobile Number:</label>
+<input id="mobile" pattern="\d+" required="" type="text"/>
+<label>Patient Name:</label>
+<input id="name" required="" type="text"/>
+<label>Initial Fees:</label>
+<input id="fees" required="" type="number"/>
+<label>Date of Treatment:</label>
+<input id="date" required="" type="date"/>
+<label>Points Used:</label>
+<textarea id="points" required="" rows="2"></textarea>
+<button type="submit">Save New Patient</button>
+</form>
+</div><div class="tab-content" id="search">
+<div class="search">
+<h3>Search Patient</h3>
+<input id="searchInput" placeholder="Enter mobile number" type="text"/>
+<button onclick="searchRecords()">Search</button>
+</div>
+<div class="records">
+<h3>Search Results</h3>
+<div id="recordsContainer"></div>
+</div>
 
-  <h2>Acupuncture Patient Records</h2>
-
-  <div class="tabs">
-    <button class="tab-button" data-tab="reports">📊 Reports</button>
-
-    <button class="tab-button active" data-tab="new">➕ New Patient</button>
-    <button class="tab-button" data-tab="search">🔍 Search</button>
-  </div>
-
-  <div id="new" class="tab-content active">
-    <form id="patientForm">
-      <label>Mobile Number:</label>
-      <input type="text" id="mobile" required pattern="\d+">
-
-      <label>Patient Name:</label>
-      <input type="text" id="name" required>
-
-      <label>Initial Fees:</label>
-      <input type="number" id="fees" required>
-
-      <label>Date of Treatment:</label>
-      <input type="date" id="date" required>
-
-      <label>Points Used:</label>
-      <textarea id="points" rows="2" required></textarea>
-
-      <button type="submit">Save New Patient</button>
-    </form>
-  </div>
-
-  <div id="search" class="tab-content">
-    <div class="search">
-      <h3>Search Patient</h3>
-      <input type="text" id="searchInput" placeholder="Enter mobile number">
-      <button onclick="searchRecords()">Search</button>
-    </div>
-
-    <div class="records">
-      <h3>Search Results</h3>
-      <div id="recordsContainer"></div>
-    </div>
-  
-  <div id="reports" class="tab-content">
-    <div class="search">
-      <h3>Reports</h3>
-      <label for="reportRange">Select Range:</label>
-      <select id="reportRange" onchange="updateReports()">
-      <div style="margin-top: 10px;">
-        <label>Custom Date Range:</label><br>
-        <input type="date" id="startDate"> to
-        <input type="date" id="endDate">
-        <button onclick="filterByCustomDates()">Apply</button>
-      </div>
-
-        <option value="daily">Today</option>
-        <option value="weekly">This Week</option>
-        <option value="monthly">This Month</option>
-      </select>
-    </div>
-    <div class="records">
-      <canvas id="patientsChart" style="max-width: 600px; margin: auto;"></canvas>
-      <canvas id="feesChart" style="max-width: 600px; margin: auto; margin-top: 20px;"></canvas>
-    </div>
-  </div>
-
-
-  <div style="text-align:center; padding: 10px;">
-    <button onclick="exportData()">📤 Backup (Export)</button>
-    <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-    <button onclick="document.getElementById('importFile').click()">📥 Restore (Import)</button>
-  </div>
-
-  <script>
+<div style="text-align:center; padding: 10px;">
+<button onclick="exportData()">📤 Backup (Export)</button>
+<input accept=".json" id="importFile" onchange="importData(event)" style="display:none" type="file"/>
+<button onclick="document.getElementById('importFile').click()">📥 Restore (Import)</button>
+</div>
+<script>
     const form = document.getElementById('patientForm');
     const recordsContainer = document.getElementById('recordsContainer');
 
@@ -393,7 +352,7 @@
       }
 
 </script>
-    <script>
+<script>
       function updateReports() {
         const range = document.getElementById('reportRange').value;
         const patients = getPatients();
@@ -485,10 +444,10 @@
         let totalFees = 0;
 
         for (const mobile in patients) {
-          patients[mobile].forEach(record => {
-            record.treatments.forEach(t => {
+          patients[mobile].forEach(record =&gt; {
+            record.treatments.forEach(t =&gt; {
               const treatmentDate = new Date(t.date);
-              if (treatmentDate >= start && treatmentDate <= end) {
+              if (treatmentDate &gt;= start &amp;&amp; treatmentDate &lt;= end) {
                 patientCount++;
                 totalFees += parseFloat(record.fees || 0);
               }
@@ -500,6 +459,28 @@
         drawChart('feesChart', 'Fees Collected', totalFees);
       }
 
-</script>
+
+</div><div class="tab-content" id="reports">
+<div class="search">
+<h3>Reports</h3>
+<label for="reportRange">Select Range:</label>
+<select id="reportRange" onchange="updateReports()">
+<div style="margin-top: 10px;">
+<label>Custom Date Range:</label><br/>
+<input id="startDate" type="date"/> to
+        <input id="endDate" type="date"/>
+<button onclick="filterByCustomDates()">Apply</button>
+</div>
+<option value="daily">Today</option>
+<option value="weekly">This Week</option>
+<option value="monthly">This Month</option>
+</select>
+</div>
+<div class="records">
+<canvas id="patientsChart" style="max-width: 600px; margin: auto;"></canvas>
+<canvas id="feesChart" style="max-width: 600px; margin: auto; margin-top: 20px;"></canvas>
+</div>
+</div>
+
 </body>
 </html>
