@@ -1,12 +1,11 @@
 
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Acupuncture Clinic App</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acupuncture Clinic App</title>
+  <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -20,6 +19,7 @@
       display: flex;
       justify-content: center;
       background-color: #00796B;
+      flex-wrap: wrap;
     }
     .tabs button {
       flex: 1;
@@ -63,6 +63,7 @@
       border: 1px solid #ccc;
       margin-bottom: 10px;
       border-radius: 5px;
+      position: relative;
     }
     .treatment {
       background: #fff;
@@ -71,13 +72,14 @@
       padding: 5px;
       border-radius: 5px;
     }
-    .edit-btn {
-      background-color: #ffa726;
-      color: white;
-      border: none;
-      padding: 5px;
-      margin-top: 5px;
-      cursor: pointer;
+    .btn-right {
+      float: right;
+      margin-left: 5px;
+    }
+    canvas {
+      max-width: 600px;
+      margin: 20px auto;
+      display: block;
     }
     @media (max-width: 600px) {
       .tabs {
@@ -87,38 +89,70 @@
   </style>
 </head>
 <body>
-<h2>Acupuncture Patient Records</h2>
-<div class="tabs"><button class="tab-button active" data-tab="new">➕ New Patient</button><button class="tab-button" data-tab="search">🔍 Search</button><button class="tab-button" data-tab="reports">📊 Reports</button></div><div class="tab-content active" id="new">
-<form id="patientForm">
-<label>Mobile Number:</label>
-<input id="mobile" pattern="\d+" required="" type="text"/>
-<label>Patient Name:</label>
-<input id="name" required="" type="text"/>
-<label>Initial Fees:</label>
-<input id="fees" required="" type="number"/>
-<label>Date of Treatment:</label>
-<input id="date" required="" type="date"/>
-<label>Points Used:</label>
-<textarea id="points" required="" rows="2"></textarea>
-<button type="submit">Save New Patient</button>
-</form>
-</div><div class="tab-content" id="search">
-<div class="search">
-<h3>Search Patient</h3>
-<input id="searchInput" placeholder="Enter mobile number" type="text"/>
-<button onclick="searchRecords()">Search</button>
-</div>
-<div class="records">
-<h3>Search Results</h3>
-<div id="recordsContainer"></div>
-</div>
 
-<div style="text-align:center; padding: 10px;">
-<button onclick="exportData()">📤 Backup (Export)</button>
-<input accept=".json" id="importFile" onchange="importData(event)" style="display:none" type="file"/>
-<button onclick="document.getElementById('importFile').click()">📥 Restore (Import)</button>
-</div>
-<script>
+  <h2>Acupuncture Patient Records</h2>
+
+  <div class="tabs">
+    <button class="tab-button active" data-tab="new">➕ New Patient</button>
+    <button class="tab-button" data-tab="search">🔍 Search</button>
+    <button class="tab-button" data-tab="reports">📊 Reports</button>
+  </div>
+
+  <div id="new" class="tab-content active">
+    <form id="patientForm">
+      <label>Mobile Number:</label>
+      <input type="text" id="mobile" required pattern="\d+">
+
+      <label>Patient Name:</label>
+      <input type="text" id="name" required>
+
+      <label>Initial Fees:</label>
+      <input type="number" id="fees" required>
+
+      <label>Date of Treatment:</label>
+      <input type="date" id="date" required>
+
+      <label>Points Used:</label>
+      <textarea id="points" rows="2" required></textarea>
+
+      <button type="submit">Save New Patient</button>
+    </form>
+  </div>
+
+  <div id="search" class="tab-content">
+    <div class="search">
+      <h3>Search Patient</h3>
+      <input type="text" id="searchInput" placeholder="Enter mobile number">
+      <button onclick="searchRecords()">Search</button>
+    </div>
+
+    <div class="records">
+      <h3>Search Results</h3>
+      <div id="recordsContainer"></div>
+    </div>
+  </div>
+
+  <div id="reports" class="tab-content">
+    <div class="search">
+      <h3>Reports</h3>
+      <label>Start Date:</label>
+      <input type="date" id="startDate">
+      <label>End Date:</label>
+      <input type="date" id="endDate">
+      <button onclick="filterByCustomDates()">Apply Filter</button>
+    </div>
+    <canvas id="patientsChart"></canvas>
+    <canvas id="feesChart"></canvas>
+  </div>
+
+  <div style="text-align:center; padding: 10px;">
+    <button onclick="exportData()">📤 Backup (Export)</button>
+    <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+    <button onclick="document.getElementById('importFile').click()">📥 Restore (Import)</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
     const form = document.getElementById('patientForm');
     const recordsContainer = document.getElementById('recordsContainer');
 
@@ -134,6 +168,10 @@
         if (tabId === 'search') {
           document.getElementById('searchInput').value = '';
           recordsContainer.innerHTML = '';
+        }
+
+        if (tabId === 'reports') {
+          filterByCustomDates();
         }
       });
     });
@@ -202,10 +240,8 @@
               <input type="date" id="edit-date-${mobile}-${index}-${tIndex}" value="${t.date}">
               <label>Points:</label>
               <textarea id="edit-points-${mobile}-${index}-${tIndex}">${t.points}</textarea>
-              <div style="text-align: right;">
-                <button onclick="saveTreatment('${mobile}', ${index}, ${tIndex})">💾</button>
-                <button onclick="deleteTreatment('${mobile}', ${index}, ${tIndex})">🗑️</button>
-              </div>
+              <button class="btn-right" onclick="saveTreatment('${mobile}', ${index}, ${tIndex})">💾</button>
+              <button class="btn-right" onclick="deleteTreatment('${mobile}', ${index}, ${tIndex})">🗑️</button>
             </div>
           `;
         });
@@ -216,10 +252,8 @@
           <input type="text" id="edit-name-${mobile}-${index}" value="${patient.name}">
           <label>Fees:</label>
           <input type="number" id="edit-fees-${mobile}-${index}" value="${patient.fees}">
-          <div style="text-align: right; margin-bottom: 10px;">
-            <button onclick="savePatient('${mobile}', ${index})">💾</button>
-            <button onclick="deletePatient('${mobile}', ${index})">🗑️</button>
-          </div>
+          <button class="btn-right" onclick="savePatient('${mobile}', ${index})">💾</button>
+          <button class="btn-right" onclick="deletePatient('${mobile}', ${index})">🗑️</button><br><br>
           <strong>Mobile:</strong> ${mobile}<br>
           <strong>Treatments:</strong><br>
           ${treatmentHtml}
@@ -227,7 +261,7 @@
           <label>Add New Treatment:</label>
           <input type="date" id="date-${mobile}-${index}">
           <textarea id="points-${mobile}-${index}" placeholder="New points used"></textarea>
-          <button onclick="addTreatment('${mobile}', ${index})">Add Treatment</button>
+          <button onclick="addTreatment('${mobile}', ${index})">➕ Add Treatment</button>
         `;
 
         recordsContainer.appendChild(div);
@@ -325,162 +359,51 @@
       };
       reader.readAsText(file);
     }
-  
-    <script src="https://cdn.jsdelivr.net/npm/chart.js">
-      function filterByCustomDates() {
-        const start = new Date(document.getElementById('startDate').value);
-        const end = new Date(document.getElementById('endDate').value);
-        const patients = getPatients();
 
-        let patientCount = 0;
-        let totalFees = 0;
-
-        for (const mobile in patients) {
-          patients[mobile].forEach(record => {
-            record.treatments.forEach(t => {
-              const treatmentDate = new Date(t.date);
-              if (treatmentDate >= start && treatmentDate <= end) {
-                patientCount++;
-                totalFees += parseFloat(record.fees || 0);
-              }
-            });
-          });
-        }
-
-        drawChart('patientsChart', 'Patients Treated', patientCount);
-        drawChart('feesChart', 'Fees Collected', totalFees);
-      }
-
-</script>
-<script>
-      function updateReports() {
-        const range = document.getElementById('reportRange').value;
-        const patients = getPatients();
-        const now = new Date();
-        let patientCount = 0;
-        let totalFees = 0;
-
-        for (const mobile in patients) {
-          patients[mobile].forEach(record => {
-            record.treatments.forEach(t => {
-              const treatmentDate = new Date(t.date);
-              const timeDiff = now - treatmentDate;
-              const days = timeDiff / (1000 * 60 * 60 * 24);
-
-              if ((range === 'daily' && days < 1) ||
-                  (range === 'weekly' && days < 7) ||
-                  (range === 'monthly' && days < 31)) {
-                patientCount++;
-                totalFees += parseFloat(record.fees || 0);
-              }
-            });
-          });
-        }
-
-        drawChart('patientsChart', 'Patients Treated', patientCount);
-        drawChart('feesChart', 'Fees Collected', totalFees);
-      }
-
-      function drawChart(canvasId, label, value) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        if (window[canvasId + 'Instance']) {
-          window[canvasId + 'Instance'].destroy();
-        }
-        window[canvasId + 'Instance'] = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: [label],
-            datasets: [{
-              label: label,
-              data: [value],
-              backgroundColor: '#26a69a'
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: { beginAtZero: true }
+    function filterByCustomDates() {
+      const start = new Date(document.getElementById('startDate').value);
+      const end = new Date(document.getElementById('endDate').value);
+      const patients = getPatients();
+      let patientCount = 0;
+      let totalFees = 0;
+      for (const mobile in patients) {
+        patients[mobile].forEach(record => {
+          record.treatments.forEach(t => {
+            const treatmentDate = new Date(t.date);
+            if (treatmentDate >= start && treatmentDate <= end) {
+              patientCount++;
+              totalFees += parseFloat(record.fees || 0);
             }
-          }
+          });
         });
       }
+      drawChart('patientsChart', 'Patients Treated', patientCount);
+      drawChart('feesChart', 'Fees Collected', totalFees);
+    }
 
-      // Trigger report generation on tab switch
-      document.querySelector('[data-tab="reports"]').addEventListener('click', updateReports);
-    
-      function filterByCustomDates() {
-        const start = new Date(document.getElementById('startDate').value);
-        const end = new Date(document.getElementById('endDate').value);
-        const patients = getPatients();
-
-        let patientCount = 0;
-        let totalFees = 0;
-
-        for (const mobile in patients) {
-          patients[mobile].forEach(record => {
-            record.treatments.forEach(t => {
-              const treatmentDate = new Date(t.date);
-              if (treatmentDate >= start && treatmentDate <= end) {
-                patientCount++;
-                totalFees += parseFloat(record.fees || 0);
-              }
-            });
-          });
-        }
-
-        drawChart('patientsChart', 'Patients Treated', patientCount);
-        drawChart('feesChart', 'Fees Collected', totalFees);
+    function drawChart(canvasId, label, value) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      if (window[canvasId + 'Instance']) {
+        window[canvasId + 'Instance'].destroy();
       }
-
-</script>
-
-
-      function filterByCustomDates() {
-        const start = new Date(document.getElementById('startDate').value);
-        const end = new Date(document.getElementById('endDate').value);
-        const patients = getPatients();
-
-        let patientCount = 0;
-        let totalFees = 0;
-
-        for (const mobile in patients) {
-          patients[mobile].forEach(record =&gt; {
-            record.treatments.forEach(t =&gt; {
-              const treatmentDate = new Date(t.date);
-              if (treatmentDate &gt;= start &amp;&amp; treatmentDate &lt;= end) {
-                patientCount++;
-                totalFees += parseFloat(record.fees || 0);
-              }
-            });
-          });
+      window[canvasId + 'Instance'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [label],
+          datasets: [{
+            label: label,
+            data: [value],
+            backgroundColor: '#00796B'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
         }
-
-        drawChart('patientsChart', 'Patients Treated', patientCount);
-        drawChart('feesChart', 'Fees Collected', totalFees);
-      }
-
-
-</div><div class="tab-content" id="reports">
-<div class="search">
-<h3>Reports</h3>
-<label for="reportRange">Select Range:</label>
-<select id="reportRange" onchange="updateReports()">
-<div style="margin-top: 10px;">
-<label>Custom Date Range:</label><br/>
-<input id="startDate" type="date"/> to
-        <input id="endDate" type="date"/>
-<button onclick="filterByCustomDates()">Apply</button>
-</div>
-<option value="daily">Today</option>
-<option value="weekly">This Week</option>
-<option value="monthly">This Month</option>
-</select>
-</div>
-<div class="records">
-<canvas id="patientsChart" style="max-width: 600px; margin: auto;"></canvas>
-<canvas id="feesChart" style="max-width: 600px; margin: auto; margin-top: 20px;"></canvas>
-</div>
-</div>
-
+      });
+    }
+  </script>
 </body>
 </html>
