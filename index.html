@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,292 +5,156 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Acupuncture Clinic App</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f4f4f4;
-      padding-bottom: 100px;
-    }
-    h2, h3 {
-      text-align: center;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      background-color: #00796B;
-    }
-    .tabs button {
-      flex: 1;
-      padding: 15px;
-      border: none;
-      background-color: #00796B;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .tabs button.active {
-      background-color: #004D40;
-    }
-    .tab-content {
-      display: none;
-      padding: 20px;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    form, .search, .records {
-      background: white;
-      padding: 15px;
-      margin: 10px auto;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      max-width: 600px;
-    }
-    input, textarea, button, select {
-      width: 100%;
-      margin: 5px 0 15px;
-      padding: 10px;
-      font-size: 1em;
-    }
-    label {
-      font-weight: bold;
-    }
-    .record {
-      background: #e9f7ef;
-      padding: 10px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-      border-radius: 5px;
-    }
-    .treatment {
-      background: #fff;
-      border: 1px dashed #ccc;
-      margin: 5px 0;
-      padding: 5px;
-      border-radius: 5px;
-    }
-    .edit-btn {
-      background-color: #ffa726;
-      color: white;
-      border: none;
-      padding: 5px;
-      margin-top: 5px;
-      cursor: pointer;
-    }
-    @media (max-width: 600px) {
-      .tabs {
-        flex-direction: column;
-      }
-    }
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; padding-bottom: 100px; }
+    h2, h3 { text-align: center; }
+    .tabs { display: flex; justify-content: center; background: #00796B; }
+    .tabs button { flex: 1; padding: 15px; border: none; background: #00796B; color: white; font-weight: bold; cursor: pointer; }
+    .tabs button.active { background: #004D40; }
+    .tab-content { display: none; padding: 20px; }
+    .tab-content.active { display: block; }
+    form, .search, .records { background: white; padding: 15px; margin: 10px auto; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); max-width: 600px; }
+    input, textarea, button, select { width: 100%; margin: 5px 0 15px; padding: 10px; font-size: 1em; }
+    label { font-weight: bold; }
+    .record { background: #e9f7ef; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; border-radius: 5px; }
+    .treatment { background: #fff; border: 1px dashed #ccc; margin: 5px 0; padding: 5px; border-radius: 5px; }
+    @media (max-width: 600px) { .tabs { flex-direction: column; } }
   </style>
 </head>
 <body>
 
-  <h2>Acupuncture Patient Records</h2>
+<h2>Acupuncture Patient Records</h2>
 
-  <div class="tabs">
-    <button class="tab-button active" onclick="switchTab('new')">➕ New Patient</button>
-    <button class="tab-button" onclick="switchTab('search')">🔍 Search</button>
+<div class="tabs">
+  <button class="tab-button active" onclick="switchTab('new')">➕ New Patient</button>
+  <button class="tab-button" onclick="switchTab('search')">🔍 Search</button>
+</div>
+
+<div id="new" class="tab-content active">
+  <form id="patientForm">
+    <label>Mobile Number:</label>
+    <input type="text" id="mobile" required pattern="\d+">
+    <label>Patient Name:</label>
+    <input type="text" id="name" required>
+    <label>Initial Fees:</label>
+    <input type="number" id="fees" required>
+    <label>Date of Treatment:</label>
+    <input type="date" id="date" required>
+    <label>Points Used:</label>
+    <textarea id="points" rows="2" required></textarea>
+    <button type="submit">Save New Patient</button>
+  </form>
+</div>
+
+<div id="search" class="tab-content">
+  <div class="search">
+    <h3>Search Patient</h3>
+    <input type="text" id="searchInput" placeholder="Enter mobile or name">
+    <button onclick="searchRecords()">Search</button>
   </div>
-
-  <div id="new" class="tab-content active">
-    <form id="patientForm">
-      <label>Mobile Number:</label>
-      <input type="text" id="mobile" required pattern="\d+">
-
-      <label>Patient Name:</label>
-      <input type="text" id="name" required>
-
-      <label>Initial Fees:</label>
-      <input type="number" id="fees" required>
-
-      <label>Date of Treatment:</label>
-      <input type="date" id="date" required>
-
-      <label>Points Used:</label>
-      <textarea id="points" rows="2" required></textarea>
-
-      <button type="submit">Save New Patient</button>
-    </form>
+  <div class="records">
+    <h3>Search Results</h3>
+    <div id="recordsContainer"></div>
   </div>
+</div>
 
-  <div id="search" class="tab-content">
-    <div class="search">
-      <h3>Search Patient</h3>
-      <input type="text" id="searchInput" placeholder="Enter mobile number">
-      <button onclick="searchRecords()">Search</button>
-    </div>
+<div style="text-align:center; padding: 10px;">
+  <button onclick="exportData()">📤 Backup (Export)</button>
+  <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+  <button onclick="document.getElementById('importFile').click()">📥 Restore (Import)</button>
+</div>
 
-    <div class="records">
-      <h3>Search Results</h3>
-      <div id="recordsContainer"></div>
-    </div>
-  </div>
+<script>
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector('.tab-button[onclick*="'+tabId+'"]').classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
 
-  <div style="text-align:center; padding: 10px;">
-    <button onclick="exportData()">📤 Backup (Export)</button>
-    <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-    <button onclick="document.getElementById('importFile').click()">📥 Restore (Import)</button>
-  </div>
+function getPatients() {
+  return JSON.parse(localStorage.getItem('patients') || '{}');
+}
 
-  <script>
-    const form = document.getElementById('patientForm');
-    const recordsContainer = document.getElementById('recordsContainer');
+function savePatients(patients) {
+  localStorage.setItem('patients', JSON.stringify(patients));
+}
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelector(\`.tab-button[onclick*="\${tabId}"]\`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
+document.getElementById('patientForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const fees = document.getElementById('fees').value.trim();
+  const date = document.getElementById('date').value;
+  const points = document.getElementById('points').value.trim();
+  const patients = getPatients();
+  if (!patients[mobile]) patients[mobile] = [];
+  patients[mobile].push({ name, fees, treatments: [{ date, points }] });
+  savePatients(patients);
+  this.reset();
+  alert("New patient added.");
+});
 
-    function getPatients() {
-      return JSON.parse(localStorage.getItem('patients') || '{}');
-    }
+function searchRecords() {
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  const patients = getPatients();
+  const records = [];
 
-    function savePatients(patients) {
-      localStorage.setItem('patients', JSON.stringify(patients));
-    }
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const mobile = document.getElementById('mobile').value.trim();
-      const fees = document.getElementById('fees').value.trim();
-      const date = document.getElementById('date').value;
-      const points = document.getElementById('points').value.trim();
-
-      let patients = getPatients();
-
-      if (!patients[mobile]) {
-        patients[mobile] = [];
+  for (const mobile in patients) {
+    patients[mobile].forEach(p => {
+      if (mobile.includes(keyword) || p.name.toLowerCase().includes(keyword)) {
+        records.push({ mobile, patient: p });
       }
-
-      patients[mobile].push({
-        name,
-        fees,
-        treatments: [{ date, points }]
-      });
-
-      savePatients(patients);
-      form.reset();
-      alert("New patient added successfully!");
     });
+  }
 
-    function searchRecords() {
-      const keyword = document.getElementById('searchInput').value.trim();
-      const patients = getPatients();
-      const records = patients[keyword] || [];
-      renderRecords(keyword, records);
+  renderRecords(records);
+}
+
+function renderRecords(records) {
+  const container = document.getElementById('recordsContainer');
+  container.innerHTML = '';
+  if (!records.length) {
+    container.innerHTML = '<p>No matching patients found.</p>';
+    return;
+  }
+  records.forEach((entry, i) => {
+    const div = document.createElement('div');
+    div.className = 'record';
+    let treatments = '';
+    entry.patient.treatments.forEach(t => {
+      treatments += `<div class="treatment"><strong>Date:</strong> ${t.date}<br><strong>Points:</strong> ${t.points}</div>`;
+    });
+    div.innerHTML = `<strong>Result #${i+1}</strong><br><strong>Name:</strong> ${entry.patient.name}<br><strong>Mobile:</strong> ${entry.mobile}<br><strong>Fees:</strong> ₹${entry.patient.fees}<br>${treatments}`;
+    container.appendChild(div);
+  });
+}
+
+function exportData() {
+  const data = JSON.stringify(getPatients(), null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "patients_backup.json";
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      savePatients(data);
+      alert("Data imported successfully!");
+    } catch {
+      alert("Invalid file.");
     }
+  };
+  reader.readAsText(file);
+}
+</script>
 
-    function renderRecords(mobile, patientsList) {
-      recordsContainer.innerHTML = '';
-      if (!patientsList.length) {
-        recordsContainer.innerHTML = '<p>No matching patients found.</p>';
-        return;
-      }
-
-      patientsList.forEach((patient, index) => {
-        const div = document.createElement('div');
-        div.className = 'record';
-
-        let treatmentHtml = '';
-        patient.treatments.forEach((t, i) => {
-          treatmentHtml += \`
-            <div class="treatment">
-              <strong>Date:</strong> <input type="date" value="\${t.date}" onchange="updateTreatmentDate('\${mobile}', \${index}, \${i}, this.value)"><br>
-              <strong>Points:</strong><br>
-              <textarea onchange="updateTreatmentPoints('\${mobile}', \${index}, \${i}, this.value)">\${t.points}</textarea>
-            </div>
-          \`;
-        });
-
-        div.innerHTML = \`
-          <strong>Patient #\${index + 1}</strong><br>
-          <label>Name:</label><input type="text" value="\${patient.name}" onchange="updatePatientName('\${mobile}', \${index}, this.value)"><br>
-          <label>Fees:</label><input type="number" value="\${patient.fees}" onchange="updatePatientFees('\${mobile}', \${index}, this.value)"><br>
-          <strong>Mobile:</strong> \${mobile}<br>
-          <strong>Treatments:</strong><br>
-          \${treatmentHtml}
-          <hr>
-          <label>Add New Treatment:</label>
-          <input type="date" id="date-\${mobile}-\${index}">
-          <textarea id="points-\${mobile}-\${index}" placeholder="New points used"></textarea>
-          <button onclick="addTreatment('\${mobile}', \${index})">Add Treatment</button>
-        \`;
-
-        recordsContainer.appendChild(div);
-      });
-    }
-
-    function addTreatment(mobile, index) {
-      const date = document.getElementById(\`date-\${mobile}-\${index}\`).value;
-      const points = document.getElementById(\`points-\${mobile}-\${index}\`).value.trim();
-
-      if (!date || !points) {
-        alert("Please enter date and points.");
-        return;
-      }
-
-      let patients = getPatients();
-      if (patients[mobile] && patients[mobile][index]) {
-        patients[mobile][index].treatments.push({ date, points });
-        savePatients(patients);
-        searchRecords();
-      }
-    }
-
-    function updatePatientName(mobile, index, value) {
-      let patients = getPatients();
-      patients[mobile][index].name = value;
-      savePatients(patients);
-    }
-
-    function updatePatientFees(mobile, index, value) {
-      let patients = getPatients();
-      patients[mobile][index].fees = value;
-      savePatients(patients);
-    }
-
-    function updateTreatmentDate(mobile, patientIndex, treatmentIndex, value) {
-      let patients = getPatients();
-      patients[mobile][patientIndex].treatments[treatmentIndex].date = value;
-      savePatients(patients);
-    }
-
-    function updateTreatmentPoints(mobile, patientIndex, treatmentIndex, value) {
-      let patients = getPatients();
-      patients[mobile][patientIndex].treatments[treatmentIndex].points = value;
-      savePatients(patients);
-    }
-
-    function exportData() {
-      const dataStr = JSON.stringify(getPatients(), null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'patients_backup.json';
-      a.click();
-    }
-
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          savePatients(data);
-          alert('Data imported successfully!');
-          searchRecords();
-        } catch (err) {
-          alert('Invalid file!');
-        }
-      };
-      reader.readAsText(file);
-    }
-  </script>
 </body>
 </html>
