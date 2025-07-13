@@ -1,41 +1,56 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Acupuncture Clinic App</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="script.js" defer></script>
 </head>
 <body>
-  <h1>Acupuncture Clinic App</h1>
-  <div class="tab">
-    <button onclick="showTab('new')">New Patient</button>
-    <button onclick="showTab('search')">Search</button>
-    <button onclick="showTab('reports')">Reports</button>
+  <div class="tabs">
+    <button onclick="showTab('new')">📝 New Patient</button>
+    <button onclick="showTab('search')">🔍 Search</button>
+    <button onclick="showTab('treatment')">💉 Add Treatment</button>
+    <button onclick="showTab('reports')">📊 Reports</button>
+    <button onclick="exportData()">📤 Export</button>
   </div>
-  <div id="new" class="tab-content">
+
+  <div id="new" class="tab">
     <h2>New Patient</h2>
-    <form id="newPatientForm">
-      <input type="text" id="name" placeholder="Name" required><br>
-      <input type="tel" id="phone" placeholder="Phone" required><br>
-      <input type="text" id="address" placeholder="Address"><br>
-      <input type="date" id="date" required><br>
-      <input type="text" id="symptoms" placeholder="Symptoms"><br>
-      <input type="number" id="fee" placeholder="Fee" required><br>
-      <button type="submit">Save</button>
-    </form>
+    <input placeholder="Name" id="newName" />
+    <input placeholder="Phone Number" id="newPhone" />
+    <input placeholder="Address" id="newAddress" />
+    <button onclick="addPatient()">➕ Save</button>
   </div>
-  <div id="search" class="tab-content" style="display:none;">
+
+  <div id="search" class="tab">
     <h2>Search Patient</h2>
-    <input type="text" id="searchInput" placeholder="Search by name/phone" oninput="searchPatients()">
+    <input placeholder="Search by name or phone" oninput="searchPatient(this.value)" />
     <div id="searchResults"></div>
   </div>
-  <div id="reports" class="tab-content" style="display:none;">
-    <h2>Reports</h2>
-    <canvas id="reportChart"></canvas>
+
+  <div id="treatment" class="tab">
+    <h2>Add Treatment</h2>
+    <input placeholder="Name" id="treatName" />
+    <input placeholder="Phone" id="treatPhone" />
+    <input type="date" id="treatDate" />
+    <input placeholder="Symptoms" id="treatSymptoms" />
+    <input placeholder="Fee" id="treatFee" />
+    <button onclick="addTreatment()">💾 Save Treatment</button>
   </div>
+
+  <div id="reports" class="tab">
+    <h2>Reports</h2>
+    <div>
+      <label>From:</label><input type="date" id="reportFrom" />
+      <label>To:</label><input type="date" id="reportTo" />
+      <button onclick="loadReports()">📆 Filter</button>
+    </div>
+    <canvas id="pieChart"></canvas>
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
