@@ -1,0 +1,9 @@
+
+body { font-family: Arial; margin: 0; padding: 20px; background: #f9f9f9; }
+input, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 400px; }
+button.icon-btn { background: none; border: none; font-size: 18px; margin: 2px 0; }
+.result-entry { background: #fff; padding: 10px; margin: 10px 0; border-radius: 8px; box-shadow: 0 0 5px #ccc; position: relative; }
+.result-buttons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; }
+.treatment-form input { width: calc(100% - 10px); margin: 3px 0; }
+.treatment-list { margin-top: 10px; padding-left: 15px; font-size: 14px; }
+.tab button { padding: 10px; margin: 5px; }
