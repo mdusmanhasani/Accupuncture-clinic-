@@ -11,6 +11,7 @@
   <div class="tabs">
     <button onclick="showTab('new')">📝 New Patient</button>
     <button onclick="showTab('search')">🔍 Search</button>
+    <button onclick="showTab('treatment')">💊 Add Treatment</button>
     <button onclick="showTab('reports')">📊 Reports</button>
     <button onclick="exportData()">📤 Export</button>
   </div>
@@ -20,16 +21,17 @@
     <input placeholder="Name" id="newName" />
     <input placeholder="Phone Number" id="newPhone" />
     <input placeholder="Address" id="newAddress" />
-    <input type="date" id="treatDate" />
-    <input placeholder="Fee" id="treatFee" />
-    <input placeholder="Symptoms" id="treatSymptoms" />
-    <input placeholder="Points Used" id="points" />
+    <input type="date" id="newDate" />
+    <input placeholder="Fee" id="newFee" />
+    <input placeholder="Symptoms" id="newSymptoms" />
+    <input placeholder="Points Used" id="newPoints" />
     <button onclick="addPatient()">➕ Save</button>
   </div>
 
   <div id="search" class="tab">
     <h2>Search Patient</h2>
-    <input placeholder="Search by name or phone" oninput="searchPatient(this.value)" />
+    <input placeholder="Search by name or phone" id="searchBox" />
+    <button onclick="searchPatient(document.getElementById('searchBox').value)">🔍 Search</button>
     <div id="searchResults"></div>
   </div>
 
@@ -38,7 +40,7 @@
     <input type="date" id="treatDate" />
     <input placeholder="Fee" id="treatFee" />
     <input placeholder="Symptoms" id="treatSymptoms" />
-    <input placeholder="Points Used" id="points" />
+    <input placeholder="Points Used" id="treatPoints" />
     <button onclick="addTreatment()">💾 Save Treatment</button>
   </div>
 
