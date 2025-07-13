@@ -4,13 +4,24 @@ body {
   background: #f3f3f3;
 }
 
+.tabs {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
 .tabs button {
-  padding: 10px;
+  padding: 10px 15px;
   margin: 5px;
   border: none;
   background: #1976d2;
   color: white;
   border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tabs button:hover {
+  background: #125a9c;
 }
 
 .tab {
@@ -20,10 +31,13 @@ body {
 
 .tab input {
   display: block;
-  margin: 5px 0;
-  padding: 8px;
+  margin: 6px 0;
+  padding: 10px;
   width: 100%;
   box-sizing: border-box;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
 .tab button {
@@ -34,26 +48,34 @@ body {
   border: none;
   border-radius: 6px;
   width: 100%;
+  font-size: 16px;
 }
 
 .result-card {
   background: white;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
   border-radius: 8px;
-  box-shadow: 0 0 5px #ccc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   position: relative;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.result-card ul {
+  padding-left: 18px;
+  margin-top: 5px;
 }
 
 .edit-btn, .delete-btn {
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 18px;
   margin-top: 5px;
   cursor: pointer;
   color: #444;
   position: absolute;
-  top: 5px;
+  top: 8px;
 }
 
 .edit-btn {
@@ -62,4 +84,10 @@ body {
 
 .delete-btn {
   right: 5px;
+}
+
+/* Chart canvas responsive */
+canvas {
+  max-width: 100%;
+  margin-top: 20px;
 }
