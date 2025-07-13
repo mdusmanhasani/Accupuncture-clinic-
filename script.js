@@ -15,22 +15,18 @@ function addPatient() {
   const name = document.getElementById('newName').value.trim();
   const phone = document.getElementById('newPhone').value.trim();
   const address = document.getElementById('newAddress').value.trim();
-  const date = document.getElementById('treatDate').value;
-  const fee = document.getElementById('treatFee').value;
-  const symptoms = document.getElementById('treatSymptoms').value.trim();
-  const points = document.getElementById('points').value.trim();
+  const date = document.getElementById('newDate').value;
+  const fee = document.getElementById('newFee').value;
+  const symptoms = document.getElementById('newSymptoms').value.trim();
+  const points = document.getElementById('newPoints').value.trim();
 
-  if (!name || !phone) {
-    alert("Name and Phone are required.");
-    return;
-  }
+  if (!name || !phone) return alert("Name and phone required");
 
   let patients = getPatients();
-  const existing = patients.find(p => p.name === name && p.phone === phone);
-  if (existing) {
-    alert("Patient already exists. Redirecting to Search...");
+  if (patients.find(p => p.name === name && p.phone === phone)) {
+    alert("Patient already exists. Redirecting to search...");
     showTab('search');
-    document.querySelector('#search input').value = name;
+    document.getElementById('searchBox').value = name;
     searchPatient(name);
     return;
   }
@@ -44,14 +40,13 @@ function addPatient() {
   savePatients(patients);
   alert("Patient added!");
 
-  // Clear fields
   document.getElementById('newName').value = '';
   document.getElementById('newPhone').value = '';
   document.getElementById('newAddress').value = '';
-  document.getElementById('treatDate').value = '';
-  document.getElementById('treatFee').value = '';
-  document.getElementById('treatSymptoms').value = '';
-  document.getElementById('points').value = '';
+  document.getElementById('newDate').value = '';
+  document.getElementById('newFee').value = '';
+  document.getElementById('newSymptoms').value = '';
+  document.getElementById('newPoints').value = '';
 }
 
 function addTreatment() {
@@ -60,10 +55,10 @@ function addTreatment() {
   const date = document.getElementById('treatDate').value;
   const fee = document.getElementById('treatFee').value;
   const symptoms = document.getElementById('treatSymptoms').value.trim();
-  const points = document.getElementById('points').value.trim();
+  const points = document.getElementById('treatPoints').value.trim();
 
   if (!name || !phone || !date || !fee) {
-    alert("Please enter Name, Phone, Date, and Fee.");
+    alert("Please fill all required fields.");
     return;
   }
 
@@ -81,7 +76,7 @@ function addTreatment() {
   document.getElementById('treatDate').value = '';
   document.getElementById('treatFee').value = '';
   document.getElementById('treatSymptoms').value = '';
-  document.getElementById('points').value = '';
+  document.getElementById('treatPoints').value = '';
 }
 
 function searchPatient(query) {
@@ -95,7 +90,7 @@ function searchPatient(query) {
   found.forEach((p, index) => {
     const div = document.createElement('div');
     div.className = 'result-card';
-    const treatmentHTML = (p.treatments || [])
+    const treatments = (p.treatments || [])
       .map(t => `<li>${t.date} - ₹${t.fee} - ${t.symptoms || ''} (${t.points || '0'} pts)</li>`)
       .join('');
 
@@ -103,7 +98,7 @@ function searchPatient(query) {
       <b>${p.name}</b><br/>
       Phone: ${p.phone}<br/>
       Address: ${p.address || 'N/A'}<br/>
-      Treatments:<ul>${treatmentHTML}</ul>
+      Treatments:<ul>${treatments}</ul>
       <button class="edit-btn" onclick="editPatient(${index})">✏️</button>
       <button class="delete-btn" onclick="deletePatient(${index})">🗑️</button>
     `;
@@ -128,7 +123,7 @@ function editPatient(index) {
 }
 
 function deletePatient(index) {
-  if (confirm("Are you sure you want to delete this patient?")) {
+  if (confirm("Delete this patient?")) {
     const patients = getPatients();
     patients.splice(index, 1);
     savePatients(patients);
@@ -137,7 +132,7 @@ function deletePatient(index) {
 }
 
 function exportData() {
-  alert("Oops! Export not available. You can copy the data manually.");
+  alert("Oops! Export not available. Please save data manually.");
 }
 
 function loadReports() {
@@ -158,8 +153,7 @@ function loadReports() {
     (p.treatments || []).forEach(t => {
       const d = new Date(t.date);
       if (d >= from && d < to) {
-        const ds = t.date;
-        fees[ds] = (fees[ds] || 0) + parseFloat(t.fee);
+        fees[t.date] = (fees[t.date] || 0) + parseFloat(t.fee);
       }
       if (isSameDay(d, now)) counts.today += 1;
       if (isSameWeek(d, now)) counts.week += 1;
@@ -216,4 +210,4 @@ function drawBarChart(data) {
       }]
     }
   });
-    }
+}
