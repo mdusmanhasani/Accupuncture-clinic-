@@ -11,7 +11,6 @@
   <div class="tabs">
     <button onclick="showTab('new')">📝 New Patient</button>
     <button onclick="showTab('search')">🔍 Search</button>
-    <button onclick="showTab('treatment')">💉 Add Treatment</button>
     <button onclick="showTab('reports')">📊 Reports</button>
     <button onclick="exportData()">📤 Export</button>
   </div>
@@ -21,6 +20,10 @@
     <input placeholder="Name" id="newName" />
     <input placeholder="Phone Number" id="newPhone" />
     <input placeholder="Address" id="newAddress" />
+    <input type="date" id="treatDate" />
+    <input placeholder="Fee" id="treatFee" />
+    <input placeholder="Symptoms" id="treatSymptoms" />
+    <input placeholder="Points Used" id="points" />
     <button onclick="addPatient()">➕ Save</button>
   </div>
 
@@ -32,11 +35,10 @@
 
   <div id="treatment" class="tab">
     <h2>Add Treatment</h2>
-    <input placeholder="Name" id="treatName" />
-    <input placeholder="Phone" id="treatPhone" />
     <input type="date" id="treatDate" />
-    <input placeholder="Symptoms" id="treatSymptoms" />
     <input placeholder="Fee" id="treatFee" />
+    <input placeholder="Symptoms" id="treatSymptoms" />
+    <input placeholder="Points Used" id="points" />
     <button onclick="addTreatment()">💾 Save Treatment</button>
   </div>
 
