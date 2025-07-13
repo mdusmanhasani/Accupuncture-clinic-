@@ -1,9 +1,65 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 10px;
+  background: #f3f3f3;
+}
 
-body { font-family: Arial; margin: 0; padding: 20px; background: #f9f9f9; }
-input, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 400px; }
-button.icon-btn { background: none; border: none; font-size: 18px; margin: 2px 0; }
-.result-entry { background: #fff; padding: 10px; margin: 10px 0; border-radius: 8px; box-shadow: 0 0 5px #ccc; position: relative; }
-.result-buttons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; }
-.treatment-form input { width: calc(100% - 10px); margin: 3px 0; }
-.treatment-list { margin-top: 10px; padding-left: 15px; font-size: 14px; }
-.tab button { padding: 10px; margin: 5px; }
+.tabs button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  border-radius: 8px;
+}
+
+.tab {
+  display: none;
+  margin-top: 15px;
+}
+
+.tab input {
+  display: block;
+  margin: 5px 0;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tab button {
+  margin-top: 10px;
+  padding: 10px;
+  background: green;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.result-card {
+  background: white;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 0 5px #ccc;
+  position: relative;
+}
+
+.edit-btn, .delete-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  margin-top: 5px;
+  cursor: pointer;
+  color: #444;
+  position: absolute;
+  top: 5px;
+}
+
+.edit-btn {
+  right: 35px;
+}
+
+.delete-btn {
+  right: 5px;
+}
