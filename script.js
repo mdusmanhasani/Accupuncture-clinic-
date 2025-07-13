@@ -1,76 +1,169 @@
+function showTab(tabId) {
+  document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+}
 
-document.getElementById('newPatientForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const address = document.getElementById('address').value.trim();
-  const date = document.getElementById('date').value;
-  const symptoms = document.getElementById('symptoms').value.trim();
-  const fee = document.getElementById('fee').value;
+function getPatients() {
+  return JSON.parse(localStorage.getItem('patients') || '[]');
+}
 
-  let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+function savePatients(patients) {
+  localStorage.setItem('patients', JSON.stringify(patients));
+}
+
+function addPatient() {
+  const name = document.getElementById('newName').value.trim();
+  const phone = document.getElementById('newPhone').value.trim();
+  const address = document.getElementById('newAddress').value.trim();
+
+  if (!name || !phone) return alert("Name and phone required");
+
+  let patients = getPatients();
   if (patients.find(p => p.name === name && p.phone === phone)) {
-    alert('This patient already exists under that phone number. Please search instead.');
+    alert("Patient already exists. Redirecting to search...");
+    showTab('search');
+    document.querySelector('#search input').value = name;
+    searchPatient(name);
     return;
   }
 
-  patients.push({ name, phone, address, treatments: [{ date, symptoms, fee }] });
-  localStorage.setItem('patients', JSON.stringify(patients));
-  alert('Patient added!');
-  this.reset();
-});
-
-function showTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-  document.getElementById(tab).style.display = 'block';
+  patients.push({ name, phone, address, treatments: [] });
+  savePatients(patients);
+  alert("Patient added!");
 }
 
-function searchPatients() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
-  const resultsDiv = document.getElementById('searchResults');
-  resultsDiv.innerHTML = '';
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+function searchPatient(query) {
+  const results = document.getElementById('searchResults');
+  results.innerHTML = '';
+  const patients = getPatients();
+  const found = patients.filter(p => p.name.includes(query) || p.phone.includes(query));
+  found.forEach((p, index) => {
+    const div = document.createElement('div');
+    div.className = 'result-card';
+    div.innerHTML = `
+      <b>${p.name}</b><br/>
+      Phone: ${p.phone}<br/>
+      Address: ${p.address || 'N/A'}<br/>
+      Treatments:
+      <ul>${(p.treatments || []).map(t => `<li>${t.date} - ₹${t.fee} - ${t.symptoms}</li>`).join('')}</ul>
+      <button class="edit-btn" onclick="editPatient(${index})">✏️</button>
+      <button class="delete-btn" onclick="deletePatient(${index})">🗑️</button>
+    `;
+    results.appendChild(div);
+  });
+}
 
-  patients.forEach((p, index) => {
-    if (p.name.toLowerCase().includes(query) || p.phone.includes(query)) {
-      const div = document.createElement('div');
-      div.className = 'result-entry';
-      div.innerHTML = `
-        <strong>${p.name}</strong> (${p.phone})<br>
-        Address: ${p.address}<br>
-        <div class="treatment-list">${p.treatments.map(t => `<div>🗓 ${t.date} | 🤒 ${t.symptoms} | 💰 ${t.fee}</div>`).join('')}</div>
-        <div class="treatment-form">
-          <input type="date" placeholder="Date" id="tdate-${index}"><br>
-          <input type="text" placeholder="Symptoms" id="tsymptoms-${index}"><br>
-          <input type="number" placeholder="Fee" id="tfee-${index}"><br>
-          <button onclick="addTreatment(${index})">➕ Add Treatment</button>
-        </div>
-        <div class="result-buttons">
-          <button class="icon-btn" onclick="deletePatient(${index})">🗑️</button>
-        </div>
-      `;
-      resultsDiv.appendChild(div);
+function editPatient(index) {
+  const patients = getPatients();
+  const p = patients[index];
+  const newName = prompt("Edit Name", p.name);
+  const newPhone = prompt("Edit Phone", p.phone);
+  if (newName && newPhone) {
+    patients[index].name = newName;
+    patients[index].phone = newPhone;
+    savePatients(patients);
+    searchPatient(newName);
+  }
+}
+
+function deletePatient(index) {
+  if (confirm("Delete this patient?")) {
+    const patients = getPatients();
+    patients.splice(index, 1);
+    savePatients(patients);
+    searchPatient('');
+  }
+}
+
+function addTreatment() {
+  const name = document.getElementById('treatName').value.trim();
+  const phone = document.getElementById('treatPhone').value.trim();
+  const date = document.getElementById('treatDate').value;
+  const symptoms = document.getElementById('treatSymptoms').value.trim();
+  const fee = document.getElementById('treatFee').value;
+
+  if (!name || !phone || !date || !fee) return alert("All fields required");
+
+  const patients = getPatients();
+  const patient = patients.find(p => p.name === name && p.phone === phone);
+  if (!patient) return alert("Patient not found");
+
+  patient.treatments.push({ date, symptoms, fee: parseFloat(fee) });
+  savePatients(patients);
+  alert("Treatment added!");
+}
+
+function exportData() {
+  alert("Oops! Export not available here. You can save data manually as text.");
+}
+
+function loadReports() {
+  const patients = getPatients();
+  const from = new Date(document.getElementById('reportFrom').value);
+  const to = new Date(document.getElementById('reportTo').value);
+  to.setDate(to.getDate() + 1); // include the 'to' day
+
+  const counts = { today: 0, week: 0, month: 0 };
+  const fees = {};
+
+  const now = new Date();
+  patients.forEach(p => {
+    (p.treatments || []).forEach(t => {
+      const d = new Date(t.date);
+      if (d >= from && d < to) {
+        const ds = t.date;
+        fees[ds] = (fees[ds] || 0) + parseFloat(t.fee);
+      }
+
+      if (isSameDay(d, now)) counts.today += 1;
+      if (isSameWeek(d, now)) counts.week += 1;
+      if (isSameMonth(d, now)) counts.month += 1;
+    });
+  });
+
+  drawPieChart(counts);
+  drawBarChart(fees);
+}
+
+function isSameDay(d1, d2) {
+  return d1.toDateString() === d2.toDateString();
+}
+
+function isSameWeek(d1, d2) {
+  const weekStart = new Date(d2);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  return d1 >= weekStart && d1 < weekEnd;
+}
+
+function isSameMonth(d1, d2) {
+  return d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
+}
+
+function drawPieChart(data) {
+  new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Today', 'This Week', 'This Month'],
+      datasets: [{
+        data: [data.today, data.week, data.month],
+        backgroundColor: ['#4caf50', '#ff9800', '#2196f3'],
+      }]
     }
   });
 }
 
-function deletePatient(index) {
-  let patients = JSON.parse(localStorage.getItem('patients') || '[]');
-  if (confirm('Delete this patient?')) {
-    patients.splice(index, 1);
-    localStorage.setItem('patients', JSON.stringify(patients));
-    searchPatients();
-  }
-}
-
-function addTreatment(index) {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
-  const date = document.getElementById('tdate-' + index).value;
-  const symptoms = document.getElementById('tsymptoms-' + index).value.trim();
-  const fee = document.getElementById('tfee-' + index).value;
-  if (!date || !fee) return alert('Date and Fee required');
-
-  patients[index].treatments.push({ date, symptoms, fee });
-  localStorage.setItem('patients', JSON.stringify(patients));
-  searchPatients();
+function drawBarChart(data) {
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(data),
+      datasets: [{
+        label: 'Fees Collected',
+        data: Object.values(data),
+        backgroundColor: '#673ab7'
+      }]
+    }
+  });
 }
