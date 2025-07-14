@@ -2,7 +2,9 @@ function showTab(tabId) {
   document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
   document.getElementById(tabId).style.display = 'block';
 }
-
+  window.onload = function() {
+    showTab('new'); // Set 'new' tab as the default
+  }
 function getPatients() {
   return JSON.parse(localStorage.getItem('patients') || '[]');
 }
